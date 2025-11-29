@@ -5,9 +5,16 @@ import com.example.demo.model.RefreshToken;
 import com.example.demo.repository.UserRepository;
 import com.example.demo.repository.RefreshTokenRepository;
 import com.example.demo.security.JwtService;
+
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
+import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 
 import java.time.Instant;
@@ -84,12 +91,31 @@ public class AuthController {
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<?> logout(@RequestBody Map<String, String> body) {
+    public ResponseEntity<?> logout(HttpServletRequest request, HttpServletResponse response,
+                                    @RequestBody Map<String, String> body) {
+
         String refreshToken = body.get("refreshToken");
 
+        // 1. Borrar refresh token
         refreshTokenRepository.findByToken(refreshToken)
                 .ifPresent(refreshTokenRepository::delete);
 
-        return ResponseEntity.ok(Map.of("ok", true));
+        // 2. Invalidar sesión de Spring
+        new SecurityContextLogoutHandler().logout(request, response, null);
+
+        // 3. Eliminar cookie JSESSIONID
+        ResponseCookie cookie = ResponseCookie
+                .from("JSESSIONID", "")
+                .path("/")
+                .maxAge(0)
+                .httpOnly(true)
+                .secure(true)
+                .sameSite("None")
+                .build();
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE, cookie.toString())
+                .body(Map.of("ok", true));
     }
+
 }
