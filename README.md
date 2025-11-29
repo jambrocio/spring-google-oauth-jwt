@@ -8,24 +8,24 @@ This project is an example Spring Boot application that:
 
 ## Configurar credenciales de google
 
-Google Cloud Console
+### Google Cloud Console
+```
+https://console.cloud.google.com/apis/credentials
+```
+- Crea un OAuth2 Client ID:
 
-`https://console.cloud.google.com/apis/credentials`
+- Tipo: Aplicación Web
 
-Crea un OAuth2 Client ID:
-
-Tipo: Aplicación Web
-
-Redirect URI:
+- Redirect URI:
 ```
 http://localhost:8080/login/oauth2/code/google
 ```
 
 Obtendrás:
 
-clientId
+- clientId
 
-clientSecret
+- clientSecret
 
 ## Setup
 
@@ -50,7 +50,6 @@ clientSecret
 
 http://localhost:8080/oauth2/authorization/google
 
-GET
 http://localhost:8080/api/user/me
 
 # Probar en postman
